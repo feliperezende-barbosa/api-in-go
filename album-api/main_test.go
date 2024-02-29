@@ -35,6 +35,20 @@ func TestGetAlbumById(t *testing.T) {
 	assert.Equal(t, http.StatusOK, newRecord.Code)
 }
 
+// TestGetAlbumById calls getAlbumById with an id, checking for an error
+func TestErrorGetAlbumById(t *testing.T) {
+	router := setupRouter()
+
+	albumId := album{ID: "0"}
+
+	newRecord := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	router.ServeHTTP(newRecord, req)
+
+	assert.Equal(t, http.StatusNotFound, newRecord.Code)
+	assert.Equal(t, "{\n    \"message\": \"Album not found\"\n}", newRecord.Body.String())
+}
+
 // TestPostAlbum calls postAlbum with an album, checking for a valid return value
 func TestPostAlbum(t *testing.T) {
 	router := setupRouter()
