@@ -47,7 +47,6 @@ func TestPostAlbum(t *testing.T) {
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusCreated, newRecord.Code)
-
 }
 
 // TestUpdateAlbumById calls updateAlbumById with an album, checking for a valid return value
