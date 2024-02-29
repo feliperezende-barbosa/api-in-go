@@ -15,5 +15,8 @@ jobs:
           fetch-depth: 0
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
-        # with:
-        #   token: ${{ secrets.PAT }}
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: Auto Pull Request
+          branch: ${{ github.ref }} # The branch where you commit
+          base: develop # Don't forget to specify the right base branch here
