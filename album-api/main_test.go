@@ -35,7 +35,7 @@ func TestGetAlbumById(t *testing.T) {
 	assert.Equal(t, http.StatusOK, newRecord.Code)
 }
 
-// TestGetAlbumById calls getAlbumById with an id, checking for an error
+// TestGetAlbumById calls getAlbumById with an id, checking for an error.
 func TestErrorGetAlbumById(t *testing.T) {
 	router := setupRouter()
 
