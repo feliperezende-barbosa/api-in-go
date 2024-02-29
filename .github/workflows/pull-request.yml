@@ -10,9 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
-      - name: pull-request
-        uses: repo-sync/pull-request@v2
+        uses: actions/checkout@v4
         with:
-          destination_branch: "develop"
-          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        # with:
+        #   token: ${{ secrets.PAT }}
