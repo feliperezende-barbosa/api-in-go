@@ -1,4 +1,4 @@
-module github.com/feliperezende-barbosa/album-api
+module github.com/feliperezende-barbosa/api-in-go
 
 go 1.22.0
 
