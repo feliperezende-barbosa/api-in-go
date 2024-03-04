@@ -16,7 +16,7 @@ func TestGetAlbums(t *testing.T) {
 	router := setupRouter()
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/album", nil)
+	req, _ := http.NewRequest("GET", "/albums", nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -29,7 +29,7 @@ func TestGetAlbumById(t *testing.T) {
 	albumId := album{ID: "1"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -42,7 +42,7 @@ func TestErrorGetAlbumById(t *testing.T) {
 	albumId := album{ID: "0"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusNotFound, newRecord.Code)
@@ -57,7 +57,7 @@ func TestPostAlbum(t *testing.T) {
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
-	req, _ := http.NewRequest("POST", "/album", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("POST", "/albums", bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusCreated, newRecord.Code)
@@ -71,7 +71,7 @@ func TestUpdateAlbumById(t *testing.T) {
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
-	req, _ := http.NewRequest("PUT", fmt.Sprintf("/album/%v", newAlbum.ID), bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("/albums/%v", newAlbum.ID), bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -84,7 +84,7 @@ func TestDeleteAlbumById(t *testing.T) {
 	albumId := album{ID: "3"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)

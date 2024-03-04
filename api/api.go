@@ -29,11 +29,11 @@ func main() {
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 
-	router.GET("album", getAlbums)
-	router.GET("album/:id", getAlbumById)
-	router.POST("album", postAlbum)
-	router.PUT("album/:id", updateAlbumById)
-	router.DELETE("album/:id", deleteAlbumById)
+	router.GET("albums", getAlbums)
+	router.GET("albums/:id", getAlbumById)
+	router.POST("albums", postAlbums)
+	router.PUT("albums/:id", updateAlbumById)
+	router.DELETE("albums/:id", deleteAlbumById)
 
 	return router
 }
@@ -42,7 +42,7 @@ func getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
-func postAlbum(c *gin.Context) {
+func postAlbums(c *gin.Context) {
 	var newAlbum album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
