@@ -18,6 +18,6 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           commit-message: Auto Pull Request
-          title: Changes by ${{ github.ref_name }}
+          title: Auto PR opened. develop <- ${{ github.ref_name }}
           branch: ${{ github.ref }} # The branch where you commit
           base: develop # Don't forget to specify the right base branch here
