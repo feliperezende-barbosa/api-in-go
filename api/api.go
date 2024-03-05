@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/feliperezende-barbosa/api-in-go/internal/database/mongodb"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type album struct {
@@ -39,7 +41,20 @@ func setupRouter() *gin.Engine {
 }
 
 func getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, albums)
+	cursor, err := mongodb.Albums.Find(c, bson.M{})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch products"})
+		return
+	}
+
+	var albums []album
+	if err = cursor.All(c, &albums); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch products"})
+		return
+	}
+
+	c.JSON(http.StatusOK, albums)
 }
 
 func postAlbums(c *gin.Context) {

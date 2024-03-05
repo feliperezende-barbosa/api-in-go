@@ -1,4 +1,4 @@
-package db
+package mongodb
 
 import (
 	"context"
@@ -8,19 +8,26 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Conn(uri string, dbName string) (mongo.Client, error) {
+var (
+	Albums *mongo.Collection
+)
+
+func Conn(uri string, dbName string) *mongo.Client {
+
+	bsonOpts := &options.BSONOptions{
+		UseJSONStructTags: true,
+		NilSliceAsEmpty:   true,
+	}
 
 	ctx := context.TODO()
-	clientOption := options.Client().ApplyURI(uri)
+	clientOption := options.Client().ApplyURI(uri).SetBSONOptions(bsonOpts)
 
 	client, err := mongo.Connect(ctx, clientOption)
 	if err != nil {
 		log.Fatal(err)
-		return *client, err
 	}
 
-	client.Database(dbName)
+	client.Database(dbName).Collection("albums")
 
-	return *client, err
-
+	return client
 }
