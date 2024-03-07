@@ -5,24 +5,21 @@ import (
 	"net/http"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/database/mongodb"
+	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type album struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`
-	Artist string  `json:"artist"`
-	Price  float64 `json:"price"`
-}
-
-var albums = []album{
+var albums = []domain.Album{
 	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
 	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 }
 
 func main() {
+
+	mongodb.Conn("", "")
+
 	r := setupRouter()
 
 	r.Run("localhost:8080")
@@ -41,6 +38,8 @@ func setupRouter() *gin.Engine {
 }
 
 func getAlbums(c *gin.Context) {
+	var albums []*domain.Album
+
 	cursor, err := mongodb.Albums.Find(c, bson.M{})
 
 	if err != nil {
@@ -48,7 +47,6 @@ func getAlbums(c *gin.Context) {
 		return
 	}
 
-	var albums []album
 	if err = cursor.All(c, &albums); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch products"})
 		return
@@ -58,7 +56,7 @@ func getAlbums(c *gin.Context) {
 }
 
 func postAlbums(c *gin.Context) {
-	var newAlbum album
+	var newAlbum domain.Album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
 		return
@@ -84,7 +82,7 @@ func getAlbumById(c *gin.Context) {
 func updateAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
-	var updateAlbum album
+	var updateAlbum domain.Album
 
 	if err := c.BindJSON(&updateAlbum); err != nil {
 		return

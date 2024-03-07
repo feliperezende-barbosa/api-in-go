@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +27,7 @@ func TestGetAlbums(t *testing.T) {
 func TestGetAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "1"}
+	albumId := domain.Album{ID: "1"}
 
 	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
@@ -39,7 +40,7 @@ func TestGetAlbumById(t *testing.T) {
 func TestErrorGetAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "0"}
+	albumId := domain.Album{ID: "0"}
 
 	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
@@ -53,7 +54,7 @@ func TestErrorGetAlbumById(t *testing.T) {
 func TestPostAlbum(t *testing.T) {
 	router := setupRouter()
 
-	newAlbum := album{ID: "4", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99}
+	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99}
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
@@ -67,7 +68,7 @@ func TestPostAlbum(t *testing.T) {
 func TestUpdateAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	newAlbum := album{ID: "4", Title: "Sarah Vaughan and Me", Artist: "Sarah Vaughan", Price: 39.99}
+	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Me", Artist: "Sarah Vaughan", Price: 39.99}
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
@@ -81,7 +82,7 @@ func TestUpdateAlbumById(t *testing.T) {
 func TestDeleteAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "3"}
+	albumId := domain.Album{ID: "3"}
 
 	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/albums/%v", albumId.ID), nil)
