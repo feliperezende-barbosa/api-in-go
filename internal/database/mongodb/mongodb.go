@@ -14,23 +14,15 @@ var (
 
 func Conn(uri string, dbName string) *mongo.Client {
 
-	// bsonOpts := &options.BSONOptions{
-	// 	UseJSONStructTags: true,
-	// 	NilSliceAsEmpty:   true,
-	// }
-
-	// uri = "mongodb://localhost:27017"
-	// dbName = "test_db"
-
 	ctx := context.TODO()
-	clientOption := options.Client().ApplyURI("mongodb://<user>:<pass>@localhost:27017") //.SetBSONOptions(bsonOpts)
+	clientOption := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(ctx, clientOption)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Albums = client.Database("test_db").Collection("albums")
+	Albums = client.Database(dbName).Collection("albums")
 
 	return client
 }

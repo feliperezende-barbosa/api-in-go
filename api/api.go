@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/database/mongodb"
@@ -10,15 +9,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-var albums = []domain.Album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
+// var albums = []domain.Album{
+// 	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
+// 	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
+// 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
+// }
 
 func main() {
 
-	mongodb.Conn("", "")
+	mongodb.Conn("mongodb://<user>:<pass>@localhost:27017", "test_db")
 
 	r := setupRouter()
 
@@ -41,14 +40,13 @@ func getAlbums(c *gin.Context) {
 	var albums []*domain.Album
 
 	cursor, err := mongodb.Albums.Find(c, bson.M{})
-
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch products"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
 		return
 	}
 
 	if err = cursor.All(c, &albums); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch products"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
 		return
 	}
 
@@ -59,55 +57,67 @@ func postAlbums(c *gin.Context) {
 	var newAlbum domain.Album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
-	albums = append(albums, newAlbum)
-	c.IndentedJSON(http.StatusCreated, newAlbum)
+	_, err := mongodb.Albums.InsertOne(c, newAlbum)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to add album"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, newAlbum)
 }
 
 func getAlbumById(c *gin.Context) {
 	id := c.Param("id")
+	filter := bson.M{"id": id}
 
-	for _, a := range albums {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
+	album := domain.Album{}
+
+	res := mongodb.Albums.FindOne(c, filter)
+	err := res.Decode(&album)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
+		return
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found"})
+	c.JSON(http.StatusOK, album)
 }
 
 func updateAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
-	var updateAlbum domain.Album
+	album := domain.Album{}
 
-	if err := c.BindJSON(&updateAlbum); err != nil {
+	if err := c.BindJSON(&album); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
-	for index, a := range albums {
-		if a.ID == id {
-			albums = append(albums[:index], updateAlbum)
-			c.IndentedJSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Album %v uptated successfully!", a.Title)})
-			return
-		}
+	filter := bson.M{"id": id}
+	update := bson.M{"$set": album}
+
+	_, err := mongodb.Albums.UpdateOne(c, filter, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found"})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Album updated"})
 }
 
 func deleteAlbumById(c *gin.Context) {
-
 	id := c.Param("id")
 
-	for index, a := range albums {
-		if a.ID == id {
-			albums = append(albums[:index], albums[index+1:]...)
-			c.IndentedJSON(http.StatusOK, gin.H{"message": "Album deleted successfully!"})
-			return
-		}
+	filter := bson.M{"id": id}
+
+	_, err := mongodb.Albums.DeleteOne(c, filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
+		return
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found"})
+
+	c.JSON(http.StatusOK, gin.H{"message": "Album deleted successfully!"})
 }
