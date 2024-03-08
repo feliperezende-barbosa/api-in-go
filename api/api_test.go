@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +17,7 @@ func TestGetAlbums(t *testing.T) {
 	router := setupRouter()
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/album", nil)
+	req, _ := http.NewRequest("GET", "/albums", nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -26,10 +27,10 @@ func TestGetAlbums(t *testing.T) {
 func TestGetAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "1"}
+	albumId := domain.Album{ID: "1"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -39,10 +40,10 @@ func TestGetAlbumById(t *testing.T) {
 func TestErrorGetAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "0"}
+	albumId := domain.Album{ID: "0"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusNotFound, newRecord.Code)
@@ -53,11 +54,11 @@ func TestErrorGetAlbumById(t *testing.T) {
 func TestPostAlbum(t *testing.T) {
 	router := setupRouter()
 
-	newAlbum := album{ID: "4", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99}
+	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99}
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
-	req, _ := http.NewRequest("POST", "/album", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("POST", "/albums", bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusCreated, newRecord.Code)
@@ -67,11 +68,11 @@ func TestPostAlbum(t *testing.T) {
 func TestUpdateAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	newAlbum := album{ID: "4", Title: "Sarah Vaughan and Me", Artist: "Sarah Vaughan", Price: 39.99}
+	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Me", Artist: "Sarah Vaughan", Price: 39.99}
 
 	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
-	req, _ := http.NewRequest("PUT", fmt.Sprintf("/album/%v", newAlbum.ID), bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("/albums/%v", newAlbum.ID), bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
@@ -81,10 +82,10 @@ func TestUpdateAlbumById(t *testing.T) {
 func TestDeleteAlbumById(t *testing.T) {
 	router := setupRouter()
 
-	albumId := album{ID: "3"}
+	albumId := domain.Album{ID: "3"}
 
 	newRecord := httptest.NewRecorder()
-	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/album/%v", albumId.ID), nil)
+	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
 	assert.Equal(t, http.StatusOK, newRecord.Code)
