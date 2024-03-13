@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/feliperezende-barbosa/api-in-go/internal/database/mongodb"
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
