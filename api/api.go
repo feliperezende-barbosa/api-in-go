@@ -15,10 +15,14 @@ import (
 // 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 // }
 
+type MongoRepo struct {
+	handler Mongodb
+}
+
 func main() {
 
 	m := database.Mongodb{}
-	m.Conn("mongodb://<user>:<pass>@localhost:27017", "test_db")
+	m.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
 
 	r := setupRouter()
 
