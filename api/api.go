@@ -15,14 +15,13 @@ import (
 // 	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
 // }
 
-type MongoRepo struct {
-	handler Mongodb
-}
+var (
+	RepoMongo database.Mongodb
+)
 
 func main() {
 
-	m := database.Mongodb{}
-	m.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
+	RepoMongo.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
 
 	r := setupRouter()
 
@@ -44,9 +43,7 @@ func setupRouter() *gin.Engine {
 func getAlbums(c *gin.Context) {
 	var albums []*domain.Album
 
-	var m database.Mongodb
-
-	cursor, err := m.Db.Collection("albums").Find(c, bson.M{})
+	cursor, err := RepoMongo.Db.Collection("albums").Find(c, bson.M{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
 		return
@@ -63,14 +60,12 @@ func getAlbums(c *gin.Context) {
 func postAlbums(c *gin.Context) {
 	var newAlbum domain.Album
 
-	var m database.Mongodb
-
 	if err := c.BindJSON(&newAlbum); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
-	_, err := m.Db.Collection("albums").InsertOne(c, newAlbum)
+	_, err := RepoMongo.Db.Collection("albums").InsertOne(c, newAlbum)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to add album"})
 		return
@@ -84,9 +79,8 @@ func getAlbumById(c *gin.Context) {
 	filter := bson.M{"id": id}
 
 	album := domain.Album{}
-	var m database.Mongodb
 
-	res := m.Db.Collection("albums").FindOne(c, filter)
+	res := RepoMongo.Db.Collection("albums").FindOne(c, filter)
 	err := res.Decode(&album)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
@@ -100,7 +94,6 @@ func updateAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
 	album := domain.Album{}
-	var m database.Mongodb
 
 	if err := c.BindJSON(&album); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -110,7 +103,7 @@ func updateAlbumById(c *gin.Context) {
 	filter := bson.M{"id": id}
 	update := bson.M{"$set": album}
 
-	_, err := m.Db.Collection("albums").UpdateOne(c, filter, update)
+	_, err := RepoMongo.Db.Collection("albums").UpdateOne(c, filter, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
@@ -124,9 +117,7 @@ func deleteAlbumById(c *gin.Context) {
 
 	filter := bson.M{"id": id}
 
-	var m database.Mongodb
-
-	_, err := m.Db.Collection("albums").DeleteOne(c, filter)
+	_, err := RepoMongo.Db.Collection("albums").DeleteOne(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
