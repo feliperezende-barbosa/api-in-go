@@ -11,11 +11,9 @@ import (
 type Mongodb struct {
 	Client *mongo.Client
 	Db     *mongo.Database
-	Albums *mongo.Collection
 }
 
 func (c *Mongodb) Conn(uri string, dbName string) {
-	client := c.Client
 	ctx := context.TODO()
 	clientOption := options.Client().ApplyURI(uri)
 
@@ -26,5 +24,4 @@ func (c *Mongodb) Conn(uri string, dbName string) {
 
 	c.Client = client
 	c.Db = client.Database(dbName)
-	c.Albums = client.Database(dbName).Collection("albums")
 }
