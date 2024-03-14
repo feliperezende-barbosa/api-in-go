@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/feliperezende-barbosa/api-in-go/internal/database"
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,7 +17,7 @@ import (
 
 func main() {
 
-	mongodb.Conn("mongodb://<user>:<pass>@localhost:27017", "test_db")
+	database.Mongodb.Conn("mongodb://<user>:<pass>@localhost:27017", "test_db")
 
 	r := setupRouter()
 
@@ -38,7 +39,7 @@ func setupRouter() *gin.Engine {
 func getAlbums(c *gin.Context) {
 	var albums []*domain.Album
 
-	cursor, err := mongodb.Albums.Find(c, bson.M{})
+	cursor, err := database.Albums.Find(c, bson.M{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
 		return
@@ -60,7 +61,7 @@ func postAlbums(c *gin.Context) {
 		return
 	}
 
-	_, err := mongodb.Albums.InsertOne(c, newAlbum)
+	_, err := database.Albums.InsertOne(c, newAlbum)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to add album"})
 		return
@@ -75,7 +76,7 @@ func getAlbumById(c *gin.Context) {
 
 	album := domain.Album{}
 
-	res := mongodb.Albums.FindOne(c, filter)
+	res := database.Albums.FindOne(c, filter)
 	err := res.Decode(&album)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
@@ -98,7 +99,7 @@ func updateAlbumById(c *gin.Context) {
 	filter := bson.M{"id": id}
 	update := bson.M{"$set": album}
 
-	_, err := mongodb.Albums.UpdateOne(c, filter, update)
+	_, err := database.Albums.UpdateOne(c, filter, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
@@ -112,7 +113,7 @@ func deleteAlbumById(c *gin.Context) {
 
 	filter := bson.M{"id": id}
 
-	_, err := mongodb.Albums.DeleteOne(c, filter)
+	_, err := database.Albums.DeleteOne(c, filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return

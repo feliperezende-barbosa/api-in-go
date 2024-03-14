@@ -8,12 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var (
+type Mongodb struct {
+	Client *mongo.Client
+	Db     *mongo.Database
 	Albums *mongo.Collection
-)
+}
 
-func Conn(uri string, dbName string) *mongo.Client {
-
+func (c *Mongodb) Conn(uri string, dbName string) {
+	client := c.Client
 	ctx := context.TODO()
 	clientOption := options.Client().ApplyURI(uri)
 
@@ -22,7 +24,7 @@ func Conn(uri string, dbName string) *mongo.Client {
 		log.Fatal(err)
 	}
 
-	Albums = client.Database(dbName).Collection("albums")
-
-	return client
+	c.Client = client
+	c.Db = client.Database(dbName)
+	c.Albums = client.Database(dbName).Collection("albums")
 }
