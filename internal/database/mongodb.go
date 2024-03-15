@@ -4,17 +4,21 @@ import (
 	"context"
 	"log"
 
+	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Mongodb struct {
+type MongoHandler struct {
 	Client *mongo.Client
 	Db     *mongo.Database
 }
 
-func (c *Mongodb) Conn(uri string, dbName string) {
-	ctx := context.TODO()
+var (
+	ctx = context.TODO()
+)
+
+func (m *MongoHandler) Conn(uri string, dbName string) {
 	clientOption := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(ctx, clientOption)
@@ -22,6 +26,15 @@ func (c *Mongodb) Conn(uri string, dbName string) {
 		log.Fatal(err)
 	}
 
-	c.Client = client
-	c.Db = client.Database(dbName)
+	m.Client = client
+	m.Db = client.Database(dbName)
+}
+
+func (m *MongoHandler) Save(album domain.Album) error {
+	collection := m.Db.Collection("albums")
+	_, err := collection.InsertOne(ctx, album)
+	if err != nil {
+		return err
+	}
+	return nil
 }
