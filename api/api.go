@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"net/http"
@@ -9,32 +9,19 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type AlbumApi struct {
+	albumRepository domain.AlbumRepository
+}
+
 var (
 	RepoMongo database.MongoHandler
 )
 
-func main() {
-
-	RepoMongo.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
-
-	r := setupRouter()
-
-	r.Run("localhost:8080")
+func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
+	return &AlbumApi{albumRepo}
 }
 
-func setupRouter() *gin.Engine {
-	router := gin.Default()
-
-	router.GET("albums", getAlbums)
-	router.GET("albums/:id", getAlbumById)
-	router.POST("albums", postAlbums)
-	router.PUT("albums/:id", updateAlbumById)
-	router.DELETE("albums/:id", deleteAlbumById)
-
-	return router
-}
-
-func getAlbums(c *gin.Context) {
+func GetAlbums(c *gin.Context) {
 	var albums []*domain.Album
 
 	cursor, err := RepoMongo.Db.Collection("albums").Find(c, bson.M{})
@@ -51,7 +38,7 @@ func getAlbums(c *gin.Context) {
 	c.JSON(http.StatusOK, albums)
 }
 
-func postAlbums(c *gin.Context) {
+func (a *AlbumApi) PostAlbums(c *gin.Context) {
 	var newAlbum domain.Album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
@@ -59,7 +46,7 @@ func postAlbums(c *gin.Context) {
 		return
 	}
 
-	_, err := RepoMongo.Db.Collection("albums").InsertOne(c, newAlbum)
+	err := a.albumRepository.Save(newAlbum)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to add album"})
 		return
@@ -68,7 +55,7 @@ func postAlbums(c *gin.Context) {
 	c.JSON(http.StatusCreated, newAlbum)
 }
 
-func getAlbumById(c *gin.Context) {
+func GetAlbumById(c *gin.Context) {
 	id := c.Param("id")
 	filter := bson.M{"id": id}
 
@@ -84,7 +71,7 @@ func getAlbumById(c *gin.Context) {
 	c.JSON(http.StatusOK, album)
 }
 
-func updateAlbumById(c *gin.Context) {
+func UpdateAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
 	album := domain.Album{}
@@ -106,7 +93,7 @@ func updateAlbumById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Album updated"})
 }
 
-func deleteAlbumById(c *gin.Context) {
+func DeleteAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
 	filter := bson.M{"id": id}

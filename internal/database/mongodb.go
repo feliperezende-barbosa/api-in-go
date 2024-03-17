@@ -30,7 +30,7 @@ func (m *MongoHandler) Conn(uri string, dbName string) {
 	m.Db = client.Database(dbName)
 }
 
-func (m *MongoHandler) Save(album domain.Album) error {
+func (m MongoHandler) Save(album domain.Album) error {
 	collection := m.Db.Collection("albums")
 	_, err := collection.InsertOne(ctx, album)
 	if err != nil {

@@ -3,10 +3,10 @@ package repository
 import "github.com/feliperezende-barbosa/api-in-go/internal/domain"
 
 type AlbumRepo struct {
-	handler DbHandler
+	handler DBHandler
 }
 
-func NewAlbum(d DbHandler) AlbumRepo {
+func NewAlbum(d DBHandler) AlbumRepo {
 	return AlbumRepo{d}
 }
 
