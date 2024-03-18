@@ -6,3 +6,11 @@ type Album struct {
 	Artist string  `json:"artist"`
 	Price  float64 `json:"price"`
 }
+
+type AlbumRepository interface {
+	SaveAlbum(album Album) error
+	DeleteAlbum(albumId string) error
+	GetAlbums() ([]*Album, error)
+	GetAlbumById(albumId string) (*Album, error)
+	UpdateAlbum(albumId string, album Album) error
+}
