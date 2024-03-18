@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	dbHanlder database.DBHandler
+	dbHanlder database.MongoHandler
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 }
 
 func getAlbumApi() api.AlbumApi {
-	albumRepo := repository.NewAlbum(dbHanlder)
+	albumRepo := repository.NewAlbumRepo(dbHanlder)
 	albumApi := api.NewAlbumApi(albumRepo)
 	return *albumApi
 }
@@ -29,11 +29,11 @@ func setupRouter() *gin.Engine {
 
 	controller := getAlbumApi()
 
-	// router.GET("albums", controller.GetAlbums)
-	// router.GET("albums/:id", getAlbumById)
+	router.GET("albums", controller.GetAlbums)
+	router.GET("albums/:id", controller.GetAlbumById)
 	router.POST("albums", controller.PostAlbums)
-	// router.PUT("albums/:id", updateAlbumById)
-	// router.DELETE("albums/:id", deleteAlbumById)
+	router.PUT("albums/:id", controller.UpdateAlbumById)
+	router.DELETE("albums/:id", controller.DeleteAlbumById)
 
 	return router
 }

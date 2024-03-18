@@ -3,35 +3,22 @@ package api
 import (
 	"net/http"
 
-	"github.com/feliperezende-barbosa/api-in-go/internal/database"
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type AlbumApi struct {
 	albumRepository domain.AlbumRepository
 }
 
-var (
-	RepoMongo database.MongoHandler
-)
-
 func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
 	return &AlbumApi{albumRepo}
 }
 
-func GetAlbums(c *gin.Context) {
-	var albums []*domain.Album
-
-	cursor, err := RepoMongo.Db.Collection("albums").Find(c, bson.M{})
+func (a *AlbumApi) GetAlbums(c *gin.Context) {
+	albums, err := a.albumRepository.GetAlbums()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
-		return
-	}
-
-	if err = cursor.All(c, &albums); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to fetch albums"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unable to fetch albums"})
 		return
 	}
 
@@ -46,7 +33,7 @@ func (a *AlbumApi) PostAlbums(c *gin.Context) {
 		return
 	}
 
-	err := a.albumRepository.Save(newAlbum)
+	err := a.albumRepository.SaveAlbum(newAlbum)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to add album"})
 		return
@@ -55,14 +42,10 @@ func (a *AlbumApi) PostAlbums(c *gin.Context) {
 	c.JSON(http.StatusCreated, newAlbum)
 }
 
-func GetAlbumById(c *gin.Context) {
+func (a *AlbumApi) GetAlbumById(c *gin.Context) {
 	id := c.Param("id")
-	filter := bson.M{"id": id}
 
-	album := domain.Album{}
-
-	res := RepoMongo.Db.Collection("albums").FindOne(c, filter)
-	err := res.Decode(&album)
+	album, err := a.albumRepository.GetAlbumById(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
@@ -71,7 +54,7 @@ func GetAlbumById(c *gin.Context) {
 	c.JSON(http.StatusOK, album)
 }
 
-func UpdateAlbumById(c *gin.Context) {
+func (a *AlbumApi) UpdateAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
 	album := domain.Album{}
@@ -81,10 +64,7 @@ func UpdateAlbumById(c *gin.Context) {
 		return
 	}
 
-	filter := bson.M{"id": id}
-	update := bson.M{"$set": album}
-
-	_, err := RepoMongo.Db.Collection("albums").UpdateOne(c, filter, update)
+	err := a.albumRepository.UpdateAlbum(id, album)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
@@ -93,12 +73,10 @@ func UpdateAlbumById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Album updated"})
 }
 
-func DeleteAlbumById(c *gin.Context) {
+func (a *AlbumApi) DeleteAlbumById(c *gin.Context) {
 	id := c.Param("id")
 
-	filter := bson.M{"id": id}
-
-	_, err := RepoMongo.Db.Collection("albums").DeleteOne(c, filter)
+	err := a.albumRepository.DeleteAlbum(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return
