@@ -1,4 +1,4 @@
-package main
+package api_test
 
 import (
 	"bytes"
@@ -12,11 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	newRecord = httptest.NewRecorder()
+)
+
 // TestGetAlbums calls getAlbums, checking for a valid return value
 func TestGetAlbums(t *testing.T) {
-	router := setupRouter()
-
-	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/albums", nil)
 	router.ServeHTTP(newRecord, req)
 
@@ -25,11 +26,8 @@ func TestGetAlbums(t *testing.T) {
 
 // TestGetAlbumById calls getAlbumById with an id, checking for a valid return value
 func TestGetAlbumById(t *testing.T) {
-	router := setupRouter()
-
 	albumId := domain.Album{ID: "1"}
 
-	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
@@ -38,11 +36,8 @@ func TestGetAlbumById(t *testing.T) {
 
 // TestGetAlbumById calls getAlbumById with an id, checking for an error.
 func TestErrorGetAlbumById(t *testing.T) {
-	router := setupRouter()
-
 	albumId := domain.Album{ID: "0"}
 
-	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
@@ -52,11 +47,8 @@ func TestErrorGetAlbumById(t *testing.T) {
 
 // TestPostAlbum calls postAlbum with an album, checking for a valid return value
 func TestPostAlbum(t *testing.T) {
-	router := setupRouter()
-
 	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99}
 
-	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
 	req, _ := http.NewRequest("POST", "/albums", bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
@@ -66,11 +58,8 @@ func TestPostAlbum(t *testing.T) {
 
 // TestUpdateAlbumById calls updateAlbumById with an album, checking for a valid return value
 func TestUpdateAlbumById(t *testing.T) {
-	router := setupRouter()
-
 	newAlbum := domain.Album{ID: "4", Title: "Sarah Vaughan and Me", Artist: "Sarah Vaughan", Price: 39.99}
 
-	newRecord := httptest.NewRecorder()
 	jsonValue, _ := json.Marshal(newAlbum)
 	req, _ := http.NewRequest("PUT", fmt.Sprintf("/albums/%v", newAlbum.ID), bytes.NewBuffer(jsonValue))
 	router.ServeHTTP(newRecord, req)
@@ -80,11 +69,8 @@ func TestUpdateAlbumById(t *testing.T) {
 
 // TestDeleteAlbumById calls deleteAlbumById with an id, checking for a valid return value
 func TestDeleteAlbumById(t *testing.T) {
-	router := setupRouter()
-
 	albumId := domain.Album{ID: "3"}
 
-	newRecord := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("/albums/%v", albumId.ID), nil)
 	router.ServeHTTP(newRecord, req)
 
