@@ -8,18 +8,20 @@ import (
 )
 
 var (
-	dbHanlder database.MongoHandler
+	dbHanlder    database.MongoHandler
+	mySqlHandler database.MySqlHandler
 )
 
 func main() {
 	dbHanlder.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
+	mySqlHandler.Conn()
 
 	r := setupRouter()
 	r.Run("localhost:8080")
 }
 
 func getAlbumApi() api.AlbumApi {
-	albumRepo := repository.NewAlbumRepo(dbHanlder)
+	albumRepo := repository.NewAlbumRepo(mySqlHandler)
 	albumApi := api.NewAlbumApi(albumRepo)
 	return *albumApi
 }
