@@ -1,7 +1,7 @@
 package domain
 
 type Album struct {
-	ID     string
+	ID     int
 	Title  string
 	Artist string
 	Price  float64

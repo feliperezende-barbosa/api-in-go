@@ -18,16 +18,20 @@ func (ms *MySqlHandler) Conn() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if err := database.Ping(); err != nil {
+		log.Fatal(err)
+	}
 	ms.db = database
 }
 
 func mySqlConfig() *mysql.Config {
 	cfg := mysql.Config{
-		User:   "",
-		Passwd: "",
+		User:   "mysqladmin",
+		Passwd: "mysqlpass",
 		Net:    "tcp",
-		Addr:   "",
-		DBName: "album",
+		Addr:   "127.0.0.1:3307",
+		DBName: "recordings",
 	}
 	return &cfg
 }
@@ -54,7 +58,7 @@ func (ms MySqlHandler) GetAll() ([]*domain.Album, error) {
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
 		var alb *domain.Album
-		if err := rows.Scan(&alb.ID, &alb.Title, &alb.Artist, &alb.Price); err != nil {
+		if err := rows.Scan(alb.ID, alb.Title, alb.Artist, alb.Price); err != nil {
 			return nil, err
 		}
 		albums = append(albums, alb)
@@ -84,7 +88,7 @@ func (ms MySqlHandler) GetById(albumId string) (*domain.Album, error) {
 
 // Save implements repository.DBHandler.
 func (ms MySqlHandler) Save(album domain.Album) error {
-	_, err := ms.db.Exec("INSERT INTO album (title, artist, price) VALUES (?, ?, ?)", album.Title, album.Artist, album.Price)
+	_, err := ms.db.Exec("INSERT INTO album (id, title, artist, price) VALUES (?, ?, ?, ?)", album.ID, album.Title, album.Artist, album.Price)
 	if err != nil {
 		return err
 	}
