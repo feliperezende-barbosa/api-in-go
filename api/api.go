@@ -26,7 +26,7 @@ func (a *AlbumApi) GetAlbums(c *gin.Context) {
 }
 
 func (a *AlbumApi) PostAlbums(c *gin.Context) {
-	var newAlbum domain.Album
+	var newAlbum *domain.Album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -64,7 +64,7 @@ func (a *AlbumApi) UpdateAlbumById(c *gin.Context) {
 		return
 	}
 
-	err := a.albumRepository.UpdateAlbum(id, album)
+	err := a.albumRepository.UpdateAlbum(id, &album)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Album not found"})
 		return

@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	dbHanlder    database.MongoHandler
-	mySqlHandler database.MySqlHandler
+	dbHanlder    *database.MongoHandler
+	mySqlHandler *database.MySqlHandler
 )
 
 func main() {
@@ -20,10 +20,10 @@ func main() {
 	r.Run("localhost:8080")
 }
 
-func getAlbumApi() api.AlbumApi {
-	albumRepo := repository.NewAlbumRepo(mySqlHandler)
+func getAlbumApi() *api.AlbumApi {
+	albumRepo := repository.NewAlbumRepo(dbHanlder)
 	albumApi := api.NewAlbumApi(albumRepo)
-	return *albumApi
+	return albumApi
 }
 
 func setupRouter() *gin.Engine {
