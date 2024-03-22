@@ -8,9 +8,9 @@ type Album struct {
 }
 
 type AlbumRepository interface {
-	SaveAlbum(album Album) error
+	SaveAlbum(album *Album) error
 	DeleteAlbum(albumId string) error
 	GetAlbums() ([]*Album, error)
 	GetAlbumById(albumId string) (*Album, error)
-	UpdateAlbum(albumId string, album Album) error
+	UpdateAlbum(albumId string, album *Album) error
 }

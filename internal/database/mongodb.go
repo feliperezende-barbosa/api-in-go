@@ -29,7 +29,7 @@ func (m *MongoHandler) Conn(uri string, dbName string) {
 	m.Db = client.Database(dbName)
 }
 
-func (m MongoHandler) Save(album domain.Album) error {
+func (m *MongoHandler) Save(album *domain.Album) error {
 	collection := m.Db.Collection("albums")
 	_, err := collection.InsertOne(ctx, album)
 	if err != nil {
@@ -39,7 +39,7 @@ func (m MongoHandler) Save(album domain.Album) error {
 }
 
 // Delete implements repository.DBHandler.
-func (m MongoHandler) Delete(albumId string) error {
+func (m *MongoHandler) Delete(albumId string) error {
 	collection := m.Db.Collection("albums")
 	filter := bson.M{"id": albumId}
 	_, err := collection.DeleteOne(ctx, filter)
@@ -50,7 +50,7 @@ func (m MongoHandler) Delete(albumId string) error {
 }
 
 // GetAll implements repository.DBHandler.
-func (m MongoHandler) GetAll() ([]*domain.Album, error) {
+func (m *MongoHandler) GetAll() ([]*domain.Album, error) {
 	collection := m.Db.Collection("albums")
 	var albums []*domain.Album
 
@@ -66,7 +66,7 @@ func (m MongoHandler) GetAll() ([]*domain.Album, error) {
 }
 
 // GetById implements repository.DBHandler.
-func (m MongoHandler) GetById(albumId string) (*domain.Album, error) {
+func (m *MongoHandler) GetById(albumId string) (*domain.Album, error) {
 	collection := m.Db.Collection("albums")
 	filter := bson.M{"id": albumId}
 
@@ -81,7 +81,7 @@ func (m MongoHandler) GetById(albumId string) (*domain.Album, error) {
 }
 
 // Update implements repository.DBHandler.
-func (m MongoHandler) Update(albumId string, album domain.Album) error {
+func (m *MongoHandler) Update(albumId string, album *domain.Album) error {
 	collection := m.Db.Collection("albums")
 
 	filter := bson.M{"id": albumId}

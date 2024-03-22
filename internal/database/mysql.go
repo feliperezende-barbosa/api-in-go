@@ -37,7 +37,7 @@ func mySqlConfig() *mysql.Config {
 }
 
 // Delete implements repository.DBHandler.
-func (ms MySqlHandler) Delete(albumId string) error {
+func (ms *MySqlHandler) Delete(albumId string) error {
 	row := ms.db.QueryRow("DELETE FROM album WHERE id = ?", albumId)
 	if row.Err() != nil {
 		return row.Err()
@@ -46,7 +46,7 @@ func (ms MySqlHandler) Delete(albumId string) error {
 }
 
 // GetAll implements repository.DBHandler.
-func (ms MySqlHandler) GetAll() ([]*domain.Album, error) {
+func (ms *MySqlHandler) GetAll() ([]*domain.Album, error) {
 	var albums []*domain.Album
 
 	rows, err := ms.db.Query("SELECT * FROM album")
@@ -57,11 +57,11 @@ func (ms MySqlHandler) GetAll() ([]*domain.Album, error) {
 	defer rows.Close()
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		var alb *domain.Album
-		if err := rows.Scan(alb.ID, alb.Title, alb.Artist, alb.Price); err != nil {
+		var alb domain.Album
+		if err := rows.Scan(&alb.ID, &alb.Title, &alb.Artist, &alb.Price); err != nil {
 			return nil, err
 		}
-		albums = append(albums, alb)
+		albums = append(albums, &alb)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (ms MySqlHandler) GetAll() ([]*domain.Album, error) {
 }
 
 // GetById implements repository.DBHandler.
-func (ms MySqlHandler) GetById(albumId string) (*domain.Album, error) {
+func (ms *MySqlHandler) GetById(albumId string) (*domain.Album, error) {
 	row := ms.db.QueryRow("SELECT * FROM album WHERE id = ?", albumId)
 	if row.Err() != nil {
 		return nil, row.Err()
@@ -87,7 +87,7 @@ func (ms MySqlHandler) GetById(albumId string) (*domain.Album, error) {
 }
 
 // Save implements repository.DBHandler.
-func (ms MySqlHandler) Save(album domain.Album) error {
+func (ms *MySqlHandler) Save(album *domain.Album) error {
 	_, err := ms.db.Exec("INSERT INTO album (id, title, artist, price) VALUES (?, ?, ?, ?)", album.ID, album.Title, album.Artist, album.Price)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (ms MySqlHandler) Save(album domain.Album) error {
 }
 
 // Update implements repository.DBHandler.
-func (ms MySqlHandler) Update(albumId string, album domain.Album) error {
+func (ms *MySqlHandler) Update(albumId string, album *domain.Album) error {
 	_, err := ms.db.Exec("UPDATE album SET title = ?, artist = ?, price = ?) WHERE id = ?", album.Title, album.Artist, album.Price, albumId)
 	if err != nil {
 		return err
