@@ -30,7 +30,7 @@ func mySqlConfig() *mysql.Config {
 		User:   "mysqladmin",
 		Passwd: "mysqlpass",
 		Net:    "tcp",
-		Addr:   "127.0.0.1:3307",
+		Addr:   "127.0.0.1:3306",
 		DBName: "recordings",
 	}
 	return &cfg

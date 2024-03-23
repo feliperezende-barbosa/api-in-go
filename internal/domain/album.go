@@ -1,10 +1,10 @@
 package domain
 
 type Album struct {
-	ID     int
-	Title  string
-	Artist string
-	Price  float64
+	ID     int     `json:"id"`
+	Title  string  `json:"title"`
+	Artist string  `json:"artist"`
+	Price  float64 `json:"price"`
 }
 
 type AlbumRepository interface {
