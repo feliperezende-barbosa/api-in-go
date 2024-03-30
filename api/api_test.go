@@ -1,31 +1,71 @@
 package api_test
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-func albums() []domain.Album {
-	return []domain.Album{
-		{ID: uuid.New(), Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-		{ID: uuid.New(), Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-		{ID: uuid.New(), Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-	}
+var albums = []*domain.Album{
+	{ID: uuid.New(), Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
+	{ID: uuid.New(), Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
+	{ID: uuid.New(), Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
+}
+
+type MockAlbumRepository struct {
+	mock.Mock
+}
+
+func (mock *MockAlbumRepository) SaveAlbum(album *domain.Album) error {
+	args := mock.Called()
+	// result := args.Get(0)
+	return args.Error(1)
+}
+
+func (mock *MockAlbumRepository) DeleteAlbum(albumId string) error {
+	args := mock.Called()
+	// result := args.Get(0)
+	return args.Error(1)
+}
+
+func (mock *MockAlbumRepository) GetAlbums() ([]*domain.Album, error) {
+	args := mock.Called()
+	result := args.Get(0)
+	return result.([]*domain.Album), args.Error(1)
+}
+
+func (mock *MockAlbumRepository) GetAlbumById(albumId string) (*domain.Album, error) {
+	args := mock.Called()
+	result := args.Get(0)
+	return result.(*domain.Album), args.Error(1)
+}
+
+func (mock *MockAlbumRepository) UpdateAlbum(albumId string, album *domain.Album) error {
+	args := mock.Called()
+	// result := args.Get(0)
+	return args.Error(1)
 }
 
 // TestGetAlbums calls getAlbums, checking for a valid return value
 func TestGetAlbums(t *testing.T) {
-	// newRecord := httptest.NewRecorder()
-	// req, _ := http.NewRequest("GET", "/albums", nil)
-	// router.ServeHTTP(newRecord, req)
+	mockRepo := new(MockAlbumRepository)
+	mockRepo.On("GetAlbums").Return(albums, nil)
 
-	// assert.Equal(t, http.StatusOK, newRecord.Code)
-	// // assert.Equal(t, "opa", newRecord.Body.String())
+	testService := domain.AlbumRepository(mockRepo)
+	result, _ := testService.GetAlbums()
+
+	mockRepo.AssertExpectations(t)
+
+	assert.Equal(t, result, albums)
+
 }
 
 // TestGetAlbumById calls getAlbumById with an id, checking for a valid return value
@@ -83,17 +123,19 @@ func TestDeleteAlbumById(t *testing.T) {
 
 func TestAlbumApi_GetAlbums(t *testing.T) {
 	testCases := []struct {
-		name          string
-		buildServer   func(w http.ResponseWriter, r *http.Request)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+		name    string
+		handler func(w http.ResponseWriter, r *http.Request)
 	}{
 		{
 			name: "Ok",
-			buildServer: func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte(`{"Artist": "John Coltrane", "Price": 56.99}`))
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				io.WriteString(w, fmt.Sprintln(albums))
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusOK, recorder.Code)
+		},
+		{
+			name: "NotOk",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "unable to fetch albums", http.StatusBadRequest)
 			},
 		},
 	}
@@ -102,11 +144,14 @@ func TestAlbumApi_GetAlbums(t *testing.T) {
 
 			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodGet, "/albums", nil)
-			require.NoError(t, err)
-			require.Equal(t, "opa", "opa")
-
-			tc.buildServer(recorder, request)
-			tc.checkResponse(t, recorder)
+			tc.handler(recorder, request)
+			if tc.name != "NotOk" {
+				require.NoError(t, err)
+				require.Equal(t, albums, albums)
+				require.Equal(t, http.StatusOK, recorder.Code)
+			} else {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			}
 		})
 	}
 }
