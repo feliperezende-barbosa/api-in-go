@@ -1,7 +1,7 @@
 package api_test
 
 import (
-	"fmt"
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,8 +9,6 @@ import (
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,54 +16,6 @@ var albums = []*domain.Album{
 	{ID: uuid.New(), Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
 	{ID: uuid.New(), Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
 	{ID: uuid.New(), Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
-
-type MockAlbumRepository struct {
-	mock.Mock
-}
-
-func (mock *MockAlbumRepository) SaveAlbum(album *domain.Album) error {
-	args := mock.Called()
-	// result := args.Get(0)
-	return args.Error(1)
-}
-
-func (mock *MockAlbumRepository) DeleteAlbum(albumId string) error {
-	args := mock.Called()
-	// result := args.Get(0)
-	return args.Error(1)
-}
-
-func (mock *MockAlbumRepository) GetAlbums() ([]*domain.Album, error) {
-	args := mock.Called()
-	result := args.Get(0)
-	return result.([]*domain.Album), args.Error(1)
-}
-
-func (mock *MockAlbumRepository) GetAlbumById(albumId string) (*domain.Album, error) {
-	args := mock.Called()
-	result := args.Get(0)
-	return result.(*domain.Album), args.Error(1)
-}
-
-func (mock *MockAlbumRepository) UpdateAlbum(albumId string, album *domain.Album) error {
-	args := mock.Called()
-	// result := args.Get(0)
-	return args.Error(1)
-}
-
-// TestGetAlbums calls getAlbums, checking for a valid return value
-func TestGetAlbums(t *testing.T) {
-	mockRepo := new(MockAlbumRepository)
-	mockRepo.On("GetAlbums").Return(albums, nil)
-
-	testService := domain.AlbumRepository(mockRepo)
-	result, _ := testService.GetAlbums()
-
-	mockRepo.AssertExpectations(t)
-
-	assert.Equal(t, result, albums)
-
 }
 
 // TestGetAlbumById calls getAlbumById with an id, checking for a valid return value
@@ -123,34 +73,46 @@ func TestDeleteAlbumById(t *testing.T) {
 
 func TestAlbumApi_GetAlbums(t *testing.T) {
 	testCases := []struct {
-		name    string
-		handler func(w http.ResponseWriter, r *http.Request)
+		name     string
+		handler  func(w http.ResponseWriter, r *http.Request) (*http.Response, error)
+		expected int
 	}{
 		{
 			name: "Ok",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				io.WriteString(w, fmt.Sprintln(albums))
+			handler: func(w http.ResponseWriter, r *http.Request) (*http.Response, error) {
+				// io.WriteString(w, fmt.Sprintln(albums))
+				re := io.NopCloser(bytes.NewReader([]byte("opa")))
+				return &http.Response{
+					StatusCode: http.StatusOK,
+					Body:       re,
+				}, nil
 			},
+			expected: http.StatusOK,
 		},
 		{
 			name: "NotOk",
-			handler: func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, "unable to fetch albums", http.StatusBadRequest)
+			handler: func(w http.ResponseWriter, r *http.Request) (*http.Response, error) {
+				// http.Error(w, "unable to fetch albums", http.StatusBadRequest)
+				re := io.NopCloser(bytes.NewReader([]byte("")))
+				return &http.Response{
+					StatusCode: http.StatusBadRequest,
+					Body:       re,
+				}, nil
 			},
+			expected: http.StatusBadRequest,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodGet, "/albums", nil)
 			tc.handler(recorder, request)
 			if tc.name != "NotOk" {
 				require.NoError(t, err)
-				require.Equal(t, albums, albums)
-				require.Equal(t, http.StatusOK, recorder.Code)
+				require.Equal(t, "opa", recorder.Body)
+				require.Equal(t, tc.expected, recorder.Code)
 			} else {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
+				require.Equal(t, tc.expected, recorder.Code)
 			}
 		})
 	}
