@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"github.com/go-sql-driver/mysql"
@@ -16,11 +15,11 @@ func (ms *MySqlHandler) Conn() {
 	mysqlCfg := mySqlConfig()
 	database, err := sql.Open("mysql", mysqlCfg.FormatDSN())
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	if err := database.Ping(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	ms.db = database
 }

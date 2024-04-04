@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +22,7 @@ func (m *MongoHandler) Conn(uri string, dbName string) {
 
 	client, err := mongo.Connect(ctx, clientOption)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	m.Db = client.Database(dbName)
