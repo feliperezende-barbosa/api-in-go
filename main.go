@@ -1,20 +1,20 @@
 package main
 
 import (
-	"github.com/feliperezende-barbosa/api-in-go/api"
+	"github.com/feliperezende-barbosa/api-in-go/internal/api"
 	"github.com/feliperezende-barbosa/api-in-go/internal/database"
 	"github.com/feliperezende-barbosa/api-in-go/internal/repository"
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	dbHanlder    *database.MongoHandler
-	mySqlHandler *database.MySqlHandler
+	dbHanlder *database.MongoHandler
+	// mySqlHandler *database.MySqlHandler
 )
 
 func main() {
 	dbHanlder.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
-	mySqlHandler.Conn()
+	// mySqlHandler.Conn()
 
 	r := setupRouter()
 	r.Run("localhost:8080")
