@@ -4,11 +4,13 @@ import (
 	"net/http"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
+	"github.com/feliperezende-barbosa/api-in-go/internal/metric"
 	"github.com/gin-gonic/gin"
 )
 
 type AlbumApi struct {
 	albumRepository domain.AlbumRepository
+	// telemetryApi    telemetry.Promet
 }
 
 func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
@@ -16,6 +18,9 @@ func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
 }
 
 func (a *AlbumApi) GetAlbums(c *gin.Context) {
+	appMetric := metric.NewHTTP(c.Request.URL.RawPath, c.Request.Method)
+	appMetric.Started()
+
 	albums, err := a.albumRepository.GetAlbums()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unable to fetch albums"})
@@ -23,6 +28,9 @@ func (a *AlbumApi) GetAlbums(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, albums)
+
+	appMetric.Finished()
+	appMetric.StatusCode = "200"
 }
 
 func (a *AlbumApi) PostAlbums(c *gin.Context) {
