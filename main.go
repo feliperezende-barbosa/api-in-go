@@ -5,15 +5,16 @@ import (
 	"github.com/feliperezende-barbosa/api-in-go/internal/database"
 	"github.com/feliperezende-barbosa/api-in-go/internal/repository"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
-	dbHanlder *database.MongoHandler
+	dbHandler *database.MongoHandler
 	// mySqlHandler *database.MySqlHandler
 )
 
 func main() {
-	dbHanlder.Conn("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
+	dbHandler = database.NewMongoDB("mongodb://mongoadmin:mongodbtest@localhost:27017", "test_db")
 	// mySqlHandler.Conn()
 
 	r := setupRouter()
@@ -21,7 +22,7 @@ func main() {
 }
 
 func getAlbumApi() *api.AlbumApi {
-	albumRepo := repository.NewAlbumRepo(dbHanlder)
+	albumRepo := repository.NewAlbumRepo(dbHandler)
 	albumApi := api.NewAlbumApi(albumRepo)
 	return albumApi
 }
@@ -36,6 +37,7 @@ func setupRouter() *gin.Engine {
 	router.POST("albums", controller.PostAlbums)
 	router.PUT("albums/:id", controller.UpdateAlbumById)
 	router.DELETE("albums/:id", controller.DeleteAlbumById)
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	return router
 }

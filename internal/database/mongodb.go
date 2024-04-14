@@ -10,26 +10,27 @@ import (
 )
 
 type MongoHandler struct {
-	Db *mongo.Database
+	db *mongo.Database
 }
 
 var (
 	ctx = context.TODO()
 )
 
-func (m *MongoHandler) Conn(uri string, dbName string) {
-	clientOption := options.Client().ApplyURI(uri)
+func NewMongoDB(uri string, dbName string) *MongoHandler {
+	clientOption := *options.Client().ApplyURI(uri)
 
-	client, err := mongo.Connect(ctx, clientOption)
+	client, err := mongo.Connect(ctx, &clientOption)
 	if err != nil {
 		panic(err)
 	}
-
-	m.Db = client.Database(dbName)
+	return &MongoHandler{
+		db: client.Database(dbName),
+	}
 }
 
 func (m *MongoHandler) Save(album *domain.Album) error {
-	collection := m.Db.Collection("albums")
+	collection := m.db.Collection("albums")
 	_, err := collection.InsertOne(ctx, album)
 	if err != nil {
 		return err
@@ -39,7 +40,7 @@ func (m *MongoHandler) Save(album *domain.Album) error {
 
 // Delete implements repository.DBHandler.
 func (m *MongoHandler) Delete(albumId string) error {
-	collection := m.Db.Collection("albums")
+	collection := m.db.Collection("albums")
 	filter := bson.M{"id": albumId}
 	_, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
@@ -50,7 +51,7 @@ func (m *MongoHandler) Delete(albumId string) error {
 
 // GetAll implements repository.DBHandler.
 func (m *MongoHandler) GetAll() ([]*domain.Album, error) {
-	collection := m.Db.Collection("albums")
+	collection := m.db.Collection("albums")
 	var albums []*domain.Album
 
 	cursor, err := collection.Find(ctx, bson.M{})
@@ -66,7 +67,7 @@ func (m *MongoHandler) GetAll() ([]*domain.Album, error) {
 
 // GetById implements repository.DBHandler.
 func (m *MongoHandler) GetById(albumId string) (*domain.Album, error) {
-	collection := m.Db.Collection("albums")
+	collection := m.db.Collection("albums")
 	filter := bson.M{"id": albumId}
 
 	album := domain.Album{}
@@ -81,7 +82,7 @@ func (m *MongoHandler) GetById(albumId string) (*domain.Album, error) {
 
 // Update implements repository.DBHandler.
 func (m *MongoHandler) Update(albumId string, album *domain.Album) error {
-	collection := m.Db.Collection("albums")
+	collection := m.db.Collection("albums")
 
 	filter := bson.M{"id": albumId}
 	update := bson.M{"$set": album}
