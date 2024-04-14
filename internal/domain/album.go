@@ -1,12 +1,10 @@
 package domain
 
-import "github.com/google/uuid"
-
 type Album struct {
-	ID     uuid.UUID `json:"id"`
-	Title  string    `json:"title"`
-	Artist string    `json:"artist"`
-	Price  float64   `json:"price"`
+	ID     int     `json:"id"`
+	Title  string  `json:"title"`
+	Artist string  `json:"artist"`
+	Price  float64 `json:"price"`
 }
 
 type AlbumRepository interface {

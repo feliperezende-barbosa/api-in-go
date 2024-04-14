@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/feliperezende-barbosa/api-in-go/internal/domain"
@@ -10,7 +11,6 @@ import (
 
 type AlbumApi struct {
 	albumRepository domain.AlbumRepository
-	// telemetryApi    telemetry.Promet
 }
 
 func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
@@ -18,6 +18,11 @@ func NewAlbumApi(albumRepo domain.AlbumRepository) *AlbumApi {
 }
 
 func (a *AlbumApi) GetAlbums(c *gin.Context) {
+	metricService, err := metric.NewPrometheusService()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	appMetric := metric.NewHTTP(c.Request.URL.RawPath, c.Request.Method)
 	appMetric.Started()
 
@@ -30,7 +35,8 @@ func (a *AlbumApi) GetAlbums(c *gin.Context) {
 	c.JSON(http.StatusOK, albums)
 
 	appMetric.Finished()
-	appMetric.StatusCode = "200"
+	appMetric.StatusCode = c.Request.Response.Status
+	metricService.SaveHTTP(appMetric)
 }
 
 func (a *AlbumApi) PostAlbums(c *gin.Context) {
